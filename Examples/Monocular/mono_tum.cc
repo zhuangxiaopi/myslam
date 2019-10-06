@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     vector<string> vstrImageFilenames;
     vector<double> vTimestamps;
     string strFile = string(argv[3])+"/rgb.txt";
-    LoadImages(strFile, vstrImageFilenames, vTimestamps);
+    LoadImages(strFile, vstrImageFilenames, vTimestamps);//载入图像
 
     int nImages = vstrImageFilenames.size();
 
@@ -92,16 +92,18 @@ int main(int argc, char **argv)
 
         double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
 
-        vTimesTrack[ni]=ttrack;
+        vTimesTrack[ni]=ttrack;//代表处理这一张图片所花费的时间
 
         // Wait to load the next frame
         double T=0;
+
+        //用于看相领两帧之间的间隔，一判断能否达到实时的效果
         if(ni<nImages-1)
-            T = vTimestamps[ni+1]-tframe;
+            T = vTimestamps[ni+1]-tframe;//vTimestamps[ni+1] - vTimestamps[ni]
         else if(ni>0)
             T = tframe-vTimestamps[ni-1];
 
-        if(ttrack<T)
+        if(ttrack<T)//
             usleep((T-ttrack)*1e6);
     }
 
@@ -115,6 +117,7 @@ int main(int argc, char **argv)
     {
         totaltime+=vTimesTrack[ni];
     }
+    //能够得到每一帧所花费的时间
     cout << "-------" << endl << endl;
     cout << "median tracking time: " << vTimesTrack[nImages/2] << endl;
     cout << "mean tracking time: " << totaltime/nImages << endl;
@@ -131,6 +134,7 @@ void LoadImages(const string &strFile, vector<string> &vstrImageFilenames, vecto
     f.open(strFile.c_str());
 
     // skip first three lines
+    //略过前三行
     string s0;
     getline(f,s0);
     getline(f,s0);

@@ -44,6 +44,7 @@ public:
 
     // Main thread function. Draw points, keyframes, the current camera pose and the last processed
     // frame. Drawing is refreshed according to the camera fps. We use Pangolin.
+    //根据相机ｆｐｓ刷新绘图
     void Run();
 
     void RequestFinish();

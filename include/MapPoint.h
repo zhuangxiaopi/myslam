@@ -17,6 +17,14 @@
 * You should have received a copy of the GNU General Public License
 * along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
 */
+/**
+ * 创建
+ *
+ *　创建　地图点　观测帧集合　最优的描述子
+ *
+ * 　环点检测　被观测次数　小于２　删除地推点
+ * */
+
 
 #ifndef MAPPOINT_H
 #define MAPPOINT_H
@@ -31,14 +39,17 @@
 namespace ORB_SLAM2
 {
 
-class KeyFrame;
-class Map;
-class Frame;
+class KeyFrame;//关键帧
+class Map;//地图
+class Frame;//普通帧
 
 
 class MapPoint
 {
 public:
+    //构造函数　３ｄ　坐标　以及　参考帧
+    //创建关键帧地图点　世界坐标点　所属关键帧　所属地图
+    //参考帧是关键帧，该地图点将于许多关键帧对应，建立关键帧的共视关系
     MapPoint(const cv::Mat &Pos, KeyFrame* pRefKF, Map* pMap);
     MapPoint(const cv::Mat &Pos,  Map* pMap, Frame* pFrame, const int &idxF);
 
@@ -118,22 +129,23 @@ protected:
      cv::Mat mWorldPos;
 
      // Keyframes observing the point and associated index in keyframe
-     std::map<KeyFrame*,size_t> mObservations;
+     std::map<KeyFrame*,size_t> mObservations;//能够观测到此点的关键帧
 
      // Mean viewing direction
      cv::Mat mNormalVector;
 
-     // Best descriptor to fast matching
+     // Best descriptor to fast matching　//地图点的　特征描述子
      cv::Mat mDescriptor;
 
      // Reference KeyFrame
-     KeyFrame* mpRefKF;
+     KeyFrame* mpRefKF;//参考关键帧
 
      // Tracking counters
      int mnVisible;
      int mnFound;
 
      // Bad flag (we do not currently erase MapPoint from memory)
+    //坏点的标志，如果被观测到的次数小于２
      bool mbBad;
      MapPoint* mpReplaced;
 

@@ -25,7 +25,7 @@
 #include <list>
 #include <opencv/cv.h>
 
-
+//作者对ＯpenCV源码进行了修改，将特征进行均匀话
 namespace ORB_SLAM2
 {
 
@@ -83,10 +83,14 @@ public:
     }
 
     std::vector<cv::Mat> mvImagePyramid;
+    std::vector<cv::Mat> mvMaskPyramid;
+    bool remove_dynamic;
 
 protected:
-
+    //计算图像金子他
     void ComputePyramid(cv::Mat image);
+    void ComputePyramid(cv::Mat image, cv::Mat mask);
+
     void ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint> >& allKeypoints);    
     std::vector<cv::KeyPoint> DistributeOctTree(const std::vector<cv::KeyPoint>& vToDistributeKeys, const int &minX,
                                            const int &maxX, const int &minY, const int &maxY, const int &nFeatures, const int &level);
@@ -96,13 +100,20 @@ protected:
 
     int nfeatures;
     double scaleFactor;
+
+
+    //金字塔共n层，与sift不同，每层有一副图像
+    //第s层尺度为sc=Factor^c，Factor初始尺度为１．２，原始在第０层，原图在sc0=1,sc1=1.2^1
+    //每层的图像大小为H = 1/sc W*1/sc
+    //每一层按公式计算需要提取的特征点书，在本层上按Ｆｓａｔ焦点响应值排序，提取前2n个特征点
+    //然后根据harris焦点响应值排序，
     int nlevels;
     int iniThFAST;
     int minThFAST;
 
-    std::vector<int> mnFeaturesPerLevel;
+    std::vector<int> mnFeaturesPerLevel;//　每一层　特征点　个数
 
-    std::vector<int> umax;
+    std::vector<int> umax;//用于计算特征的方向，每一个v坐标对应最大的u坐标？
 
     std::vector<float> mvScaleFactor;
     std::vector<float> mvInvScaleFactor;    

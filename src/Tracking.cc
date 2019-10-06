@@ -822,6 +822,7 @@ void Tracking::UpdateLastFrame()
         }
     }
 
+
     if(vDepthIdx.empty())
         return;
 

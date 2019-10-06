@@ -23,6 +23,9 @@
 #include "ORBmatcher.h"
 #include <thread>
 
+
+//extern  vector<string> vstrYolov3Filename;//存放yolo的地方,使用在开头的那个
+
 namespace ORB_SLAM2
 {
 
@@ -246,9 +249,57 @@ void Frame::AssignFeaturesToGrid()
 
 void Frame::ExtractORB(int flag, const cv::Mat &im)
 {
+
+//    cv::Mat mask = cv::Mat(im.size(),CV_8U,cv::Scalar(255));//将普通的设置为mask
+//
+//    cout << "Load the Yolo image : " << endl;
+//    ifstream Yolo_result;
+//    string pre = "/home/zhuang/my_work/yolo_result/rgbd_dataset_freiburg3_walking_xyz/yolo_txts/";
+//    //找到yolov3的文件
+//    string str = to_string(mTimeStamp);
+//    string vstrYolov3Filename = str + ".txt";
+//    string file_loc = pre + vstrYolov3Filename;
+//
+//    Yolo_result.open(file_loc.c_str());//打开yolo的文件
+//    if (!Yolo_result.is_open()) {
+//        cerr << "Failed to open Yolo_result file! " << file_loc << endl;
+//       // return -1;
+//    }
+//    std::string Yolo_line;//每次读取１行
+//    while (std::getline(Yolo_result, Yolo_line) && !Yolo_line.empty()) {
+//        std::istringstream ssYoloData(Yolo_line);
+//        double lable;//输出的标签
+//        double X_left_concer;//标签的左上角x
+//        double Y_left_concer;//标签的左上角y
+//
+//        double width;//标签的
+//        double height;//宽度和长度
+//        double tmp;
+//        ssYoloData >> lable >> X_left_concer >> Y_left_concer >> width >> height >> tmp;
+//        if (lable == 0) {
+//            //如果检测到人的话
+//            //那么就保存这个点的坐标了，这里可以创建一个掩模了
+//            mask(cv::Rect2d(X_left_concer, Y_left_concer, width, height)).setTo(0);
+//            cout << "The Image   Height  is " << mask.rows << "THe image Width is " << mask.cols << endl;
+//            cout << "The Person's location is  X_left_concer : " << X_left_concer << "Y_left_concer"
+//                 << Y_left_concer <<
+//                 "The width is " << width << "The Heigh is : " << height << endl;
+//
+//        }
+//    }
+//    cv::imshow("The result image ", mask);
+//    cv::waitKey(1);
+
+
+
     if(flag==0)
         (*mpORBextractorLeft)(im,cv::Mat(),mvKeys,mDescriptors);
+
+  //  (*mpORBextractorLeft)(im,mask,mvKeys,mDescriptors);
+
     else
+       // (*mpORBextractorRight)(im,mask,mvKeysRight,mDescriptorsRight);
+
         (*mpORBextractorRight)(im,cv::Mat(),mvKeysRight,mDescriptorsRight);
 }
 
@@ -401,11 +452,12 @@ void Frame::ComputeBoW()
     }
 }
 
+    //对图像中的点　利用畸变参数进行矫正，得到矫正之后的点坐标，不对整个图像进行矫正（因为时间太长）
 void Frame::UndistortKeyPoints()
 {
     if(mDistCoef.at<float>(0)==0.0)
     {
-        mvKeysUn=mvKeys;
+        mvKeysUn=mvKeys;//
         return;
     }
 

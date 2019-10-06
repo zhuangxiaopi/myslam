@@ -45,10 +45,10 @@ class LoopClosing
 {
 public:
 
-    typedef pair<set<KeyFrame*>,int> ConsistentGroup;    
+    typedef pair<set<KeyFrame*>,int> ConsistentGroup;//具有连续性的候选帧
     typedef map<KeyFrame*,g2o::Sim3,std::less<KeyFrame*>,
         Eigen::aligned_allocator<std::pair<const KeyFrame*, g2o::Sim3> > > KeyFrameAndPose;
-
+    //帧　对应的sim3位姿 std::less是什么东西
 public:
 
     LoopClosing(Map* pMap, KeyFrameDatabase* pDB, ORBVocabulary* pVoc,const bool bFixScale);
@@ -120,13 +120,13 @@ protected:
     float mnCovisibilityConsistencyTh;
 
     // Loop detector variables
-    KeyFrame* mpCurrentKF;
-    KeyFrame* mpMatchedKF;
-    std::vector<ConsistentGroup> mvConsistentGroups;
+    KeyFrame* mpCurrentKF;//当前的关键帧
+    KeyFrame* mpMatchedKF;//匹配的关键帧
+    std::vector<ConsistentGroup> mvConsistentGroups;// 具有连续性的候选帧 群组
     std::vector<KeyFrame*> mvpEnoughConsistentCandidates;
     std::vector<KeyFrame*> mvpCurrentConnectedKFs;
-    std::vector<MapPoint*> mvpCurrentMatchedPoints;
-    std::vector<MapPoint*> mvpLoopMapPoints;
+    std::vector<MapPoint*> mvpCurrentMatchedPoints;//当前帧　闭环检测得到的，匹配地图点
+    std::vector<MapPoint*> mvpLoopMapPoints;//当前帧　相邻关键帧上的　地图点，　闭环出的地图点
     cv::Mat mScw;
     g2o::Sim3 mg2oScw;
 

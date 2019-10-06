@@ -24,15 +24,34 @@
 #include<fstream>
 #include<chrono>
 
+#include <string>
+#include <cstdlib>
 #include<opencv2/core/core.hpp>
+
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgcodecs/imgcodecs_c.h>
 
 #include<System.h>
 
 using namespace std;
 
+//vector<string> vstrYolov3Filename;//存放yolo的地方
+
+
 void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
                 vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps);
 
+
+void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
+                vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps,
+                vector<string> &vstrYolov3Filename);
+
+string convertToString(double d) {
+    ostringstream os;
+    if (os << d)
+        return os.str();
+    return "invalid conversion";
+}
 int main(int argc, char **argv)
 {
     if(argc != 5)
@@ -45,8 +64,16 @@ int main(int argc, char **argv)
     vector<string> vstrImageFilenamesRGB;
     vector<string> vstrImageFilenamesD;
     vector<double> vTimestamps;
+
+    //vector<string> vstrYolov3Filename;//存放yolo的地方
+
     string strAssociationFilename = string(argv[4]);
-    LoadImages(strAssociationFilename, vstrImageFilenamesRGB, vstrImageFilenamesD, vTimestamps);
+   LoadImages(strAssociationFilename, vstrImageFilenamesRGB, vstrImageFilenamesD, vTimestamps);
+
+   //重载函数LoadImages，加入了yolo的文件
+   cout << "hello world" << endl;
+//   LoadImages(strAssociationFilename, vstrImageFilenamesRGB, vstrImageFilenamesD, vTimestamps,vstrYolov3Filename);
+    cout << "hello world2" << endl;
 
     // Check consistency in the number of images and depthmaps
     int nImages = vstrImageFilenamesRGB.size();
@@ -60,11 +87,20 @@ int main(int argc, char **argv)
         cerr << endl << "Different number of images for rgb and depth." << endl;
         return 1;
     }
-
+//    else if(vstrYolov3Filename.size() != vstrImageFilenamesRGB.size()){
+//        cerr << endl << "Different number of images for rgb and depth." << endl;
+//        return 1;
+//    }
+//    //测试一下加载的文件
+//  for (vector<string>::iterator it = vstrYolov3Filename.begin(); it != vstrYolov3Filename.end();it++ ) {
+//
+//        cout << "file loc : "<< *it << endl;
+//    }
+    cout << "I come here " << endl;
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::RGBD,true);
-
-    // Vector for tracking time statistics
+//
+//    // Vector for tracking time statistics
     vector<float> vTimesTrack;
     vTimesTrack.resize(nImages);
 
@@ -74,15 +110,13 @@ int main(int argc, char **argv)
 
     // Main loop
     cv::Mat imRGB, imD;
-    for(int ni=0; ni<nImages; ni++)
-    {
+    for(int ni=0; ni<nImages; ni++) {
         // Read image and depthmap from file
-        imRGB = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB[ni],CV_LOAD_IMAGE_UNCHANGED);
-        imD = cv::imread(string(argv[3])+"/"+vstrImageFilenamesD[ni],CV_LOAD_IMAGE_UNCHANGED);
+        imRGB = cv::imread(string(argv[3]) + "/" + vstrImageFilenamesRGB[ni], CV_LOAD_IMAGE_UNCHANGED);
+        imD = cv::imread(string(argv[3]) + "/" + vstrImageFilenamesD[ni], CV_LOAD_IMAGE_UNCHANGED);
         double tframe = vTimestamps[ni];
 
-        if(imRGB.empty())
-        {
+        if (imRGB.empty()) {
             cerr << endl << "Failed to load image at: "
                  << string(argv[3]) << "/" << vstrImageFilenamesRGB[ni] << endl;
             return 1;
@@ -94,8 +128,9 @@ int main(int argc, char **argv)
         std::chrono::monotonic_clock::time_point t1 = std::chrono::monotonic_clock::now();
 #endif
 
-        // Pass the image to the SLAM system
-        SLAM.TrackRGBD(imRGB,imD,tframe);
+
+
+            SLAM.TrackRGBD(imRGB,imD,tframe);
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -119,7 +154,7 @@ int main(int argc, char **argv)
     }
 
     // Stop all threads
-    SLAM.Shutdown();
+   SLAM.Shutdown();
 
     // Tracking time statistics
     sort(vTimesTrack.begin(),vTimesTrack.end());
@@ -134,7 +169,7 @@ int main(int argc, char **argv)
 
     // Save camera trajectory
     SLAM.SaveTrajectoryTUM("CameraTrajectory.txt");
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");   
+    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
 
     return 0;
 }
@@ -164,4 +199,42 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
 
         }
     }
+}
+
+
+void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
+                vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps,
+                vector<string> &vstrYolov3Filename){
+    ifstream fAssociation;
+    fAssociation.open(strAssociationFilename.c_str());
+    while(!fAssociation.eof())
+    {
+        string s;
+        getline(fAssociation,s);
+        if(!s.empty())
+        {
+            stringstream ss;
+            ss << s;
+            double t;
+            string sRGB, sD;
+            ss >> t;
+            vTimestamps.push_back(t);
+
+
+//            string str = to_string(t);
+//            vstrYolov3Filename.push_back(str+".txt");//将yolo的文件加入
+
+
+            ss >> sRGB;
+            vstrImageFilenamesRGB.push_back(sRGB);
+            ss >> t;
+            ss >> sD;
+            vstrImageFilenamesD.push_back(sD);
+
+
+
+
+        }
+    }
+
 }

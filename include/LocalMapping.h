@@ -29,7 +29,11 @@
 
 #include <mutex>
 
-
+/**
+ *  LocalMapping作用是将Tracking中送来的关键帧放在mlNewKyyFrame列表中
+ *  处理新关键帧，地图点检查剔除，生成新地图点，Local BA 以及关键帧剔除
+ *  主要工作在于维护局部地图，也就是mapoping
+ * */
 namespace ORB_SLAM2
 {
 
@@ -75,6 +79,14 @@ public:
 protected:
 
     bool CheckNewKeyFrames();
+
+    //处理新的关键帧　ＰrocessNewKeyFrame
+    //a. 根据词典　计算当前关键帧Bow，便于后面三角花恢复地图点
+    //b. 将TrackLocalMap 中跟踪局部地图匹配上的地图点绑定到当前的关键帧
+    //在tracking县城中只是通过匹配进行局部地跟踪，优化当前关键帧姿态，
+    //也就是在graph中加入当前关键帧作为Ｎｏｄｅ,并更新edge
+
+
     void ProcessNewKeyFrame();
     void CreateNewMapPoints();
 

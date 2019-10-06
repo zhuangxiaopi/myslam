@@ -39,21 +39,21 @@ class Map
 {
 public:
     Map();
-
+    //orb-slam2主要靠的就是靠的就是地图的管理功能
     void AddKeyFrame(KeyFrame* pKF);
     void AddMapPoint(MapPoint* pMP);
     void EraseMapPoint(MapPoint* pMP);
     void EraseKeyFrame(KeyFrame* pKF);
     void SetReferenceMapPoints(const std::vector<MapPoint*> &vpMPs);
-    void InformNewBigChange();
-    int GetLastBigChangeIdx();
+    void InformNewBigChange();//地图数据　大变化
+    int GetLastBigChangeIdx();//上次地图数据大变化
 
-    std::vector<KeyFrame*> GetAllKeyFrames();
+    std::vector<KeyFrame*> GetAllKeyFrames();//得到所有的关键帧
     std::vector<MapPoint*> GetAllMapPoints();
     std::vector<MapPoint*> GetReferenceMapPoints();
 
-    long unsigned int MapPointsInMap();
-    long unsigned  KeyFramesInMap();
+    long unsigned int MapPointsInMap();//地图中地图点的数量
+    long unsigned  KeyFramesInMap();//关键帧的数量
 
     long unsigned int GetMaxKFid();
 

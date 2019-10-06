@@ -431,6 +431,7 @@ ORBextractor::ORBextractor(int _nfeatures, float _scaleFactor, int _nlevels,
     }
 
     mvImagePyramid.resize(nlevels);
+    mvMaskPyramid.resize(nlevels);
 
     mnFeaturesPerLevel.resize(nlevels);
     float factor = 1.0f / scaleFactor;
@@ -805,12 +806,23 @@ void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoin
                 if(maxX>maxBorderX)
                     maxX = maxBorderX;
 
-                vector<cv::KeyPoint> vKeysCell;
+                vector<cv::KeyPoint> vKeysCell;//计算关键点的位置，直接使用ＯpenCV中的库
+                //创建FastDectector
+//                Ptr<FastFeatureDetector> fd = FastFeatureDetector::create(iniThFAST, true);
+//                fd->detect(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
+//                        vKeysCell,
+//                        mvMaskPyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX));
+//
                 FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
                      vKeysCell,iniThFAST,true);
 
                 if(vKeysCell.empty())
                 {
+//                    fd = FastFeatureDetector::create(minThFAST, true);
+//                    fd->detect(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
+//                               vKeysCell,
+//                               mvMaskPyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX));
+
                     FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
                          vKeysCell,minThFAST,true);
                 }
@@ -1023,6 +1035,7 @@ void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<KeyPoint> > &allK
         {
             KeyPointsFilter::retainBest(keypoints,nDesiredFeatures);
             keypoints.resize(nDesiredFeatures);
+
         }
     }
 
@@ -1047,10 +1060,22 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
         return;
 
     Mat image = _image.getMat();
+
+    //在orb中添加掩模的操作
+    //Mat mask = _mask.getMat();
+
     assert(image.type() == CV_8UC1 );
+   // assert(mask.type() == CV_8UC1);
+  //  assert(image.size() == mask.size());
+    //在这里实现对于特征点的多级mask
 
     // Pre-compute the scale pyramid
     ComputePyramid(image);
+
+    //进行了掩模操作了
+//    ComputePyramid(image,mask);
+
+
 
     vector < vector<KeyPoint> > allKeypoints;
     ComputeKeyPointsOctTree(allKeypoints);
@@ -1130,5 +1155,49 @@ void ORBextractor::ComputePyramid(cv::Mat image)
     }
 
 }
+
+
+
+
+    void ORBextractor::ComputePyramid(cv::Mat image, cv::Mat mask){
+
+        for (int level = 0; level < nlevels; ++level) {
+            //得到该层的尺度倒数０
+            float scale = mvInvScaleFactor[level];
+            Size sz(cvRound((float)image.cols*scale), cvRound((float)image.rows*scale));
+            Size wholeSize(sz.width + EDGE_THRESHOLD*2, sz.height + EDGE_THRESHOLD*2);
+
+            Mat temp(wholeSize, image.type()), masktemp(wholeSize,mask.type());
+            mvImagePyramid[level] = temp(Rect(EDGE_THRESHOLD, EDGE_THRESHOLD, sz.width, sz.height));
+            mvMaskPyramid[level]  = masktemp(Rect(EDGE_THRESHOLD, EDGE_THRESHOLD, sz.width,sz.height));
+
+            // Compute the resized image
+            if( level != 0 )
+            {
+                resize(mvImagePyramid[level-1], mvImagePyramid[level], sz, 0, 0, INTER_LINEAR);
+                resize(mvMaskPyramid[level-1],mvMaskPyramid[level],sz,0,0,INTER_LINEAR);
+
+
+                copyMakeBorder(mvImagePyramid[level], temp, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
+                               BORDER_REFLECT_101+BORDER_ISOLATED);
+
+                copyMakeBorder(mvMaskPyramid[level], masktemp, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
+                               BORDER_REFLECT_101+BORDER_ISOLATED);
+            }
+            else
+            {
+                copyMakeBorder(image, temp, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
+                               BORDER_REFLECT_101);
+
+                copyMakeBorder(mask, masktemp, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
+                               BORDER_REFLECT_101);
+            }
+
+        }
+
+}
+
+
+
 
 } //namespace ORB_SLAM

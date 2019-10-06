@@ -105,6 +105,7 @@ public:
 
     // Lists used to recover the full camera trajectory at the end of the execution.
     // Basically we store the reference keyframe for each frame and its relative transformation
+    //这个列表用于最终相机轨迹的恢复
     list<cv::Mat> mlRelativeFramePoses;
     list<KeyFrame*> mlpReferences;
     list<double> mlFrameTimes;
@@ -130,9 +131,9 @@ protected:
     void CheckReplacedInLastFrame();
     bool TrackReferenceKeyFrame();
     void UpdateLastFrame();
-    bool TrackWithMotionModel();
+    bool TrackWithMotionModel();//运动模型跟踪　当前帧和
 
-    bool Relocalization();
+    bool Relocalization();//重定位　当前帧　和　所有关键帧做匹配
 
     void UpdateLocalMap();
     void UpdateLocalPoints();
@@ -166,7 +167,7 @@ protected:
     Initializer* mpInitializer;
 
     //Local Map
-    KeyFrame* mpReferenceKF;
+    KeyFrame* mpReferenceKF;//参考关键帧
     std::vector<KeyFrame*> mvpLocalKeyFrames;
     std::vector<MapPoint*> mvpLocalMapPoints;
     
@@ -184,7 +185,7 @@ protected:
     //Calibration matrix
     cv::Mat mK;
     cv::Mat mDistCoef;
-    float mbf;
+    float mbf;//基线　＊　视差
 
     //New KeyFrame rules (according to fps)
     int mMinFrames;
@@ -196,6 +197,7 @@ protected:
     float mThDepth;
 
     // For RGB-D inputs only. For some datasets (e.g. TUM) the depthmap values are scaled.
+    //对于某些数据集，深度值是错误与的，需要被放缩
     float mDepthMapFactor;
 
     //Current matches in frame
@@ -208,7 +210,7 @@ protected:
     unsigned int mnLastRelocFrameId;
 
     //Motion Model
-    cv::Mat mVelocity;
+    cv::Mat mVelocity;//mVelocity = mCurrentFrame.mTcw * LastTwc 运动速度为前后两帧的　变换矩阵
 
     //Color order (true RGB, false BGR, ignored if grayscale)
     bool mbRGB;

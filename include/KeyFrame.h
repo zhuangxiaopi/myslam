@@ -38,23 +38,26 @@ namespace ORB_SLAM2
 class Map;
 class MapPoint;
 class Frame;
-class KeyFrameDatabase;
+class KeyFrameDatabase;//关键帧数据库　存储关键点位姿等信息　用于匹配
 
 class KeyFrame
 {
 public:
+    //初始关键帧
+    //普通帧　的
     KeyFrame(Frame &F, Map* pMap, KeyFrameDatabase* pKFDB);
 
     // Pose functions
     void SetPose(const cv::Mat &Tcw);
     cv::Mat GetPose();
     cv::Mat GetPoseInverse();
-    cv::Mat GetCameraCenter();
+    cv::Mat GetCameraCenter();//得到相机中心有什么用呢
     cv::Mat GetStereoCenter();
     cv::Mat GetRotation();
     cv::Mat GetTranslation();
 
     // Bag of Words Representation
+    //计算关键点　描述子　的　词典线性表示向量
     void ComputeBoW();
 
     // Covisibility graph functions
@@ -77,7 +80,7 @@ public:
     bool hasChild(KeyFrame* pKF);
 
     // Loop Edges
-    void AddLoopEdge(KeyFrame* pKF);
+    void AddLoopEdge(KeyFrame* pKF);//添加
     std::set<KeyFrame*> GetLoopEdges();
 
     // MapPoint observation functions
@@ -111,7 +114,7 @@ public:
     static bool weightComp( int a, int b){
         return a>b;
     }
-
+    //关键帧　先后顺序
     static bool lId(KeyFrame* pKF1, KeyFrame* pKF2){
         return pKF1->mnId<pKF2->mnId;
     }
@@ -171,7 +174,7 @@ public:
     DBoW2::FeatureVector mFeatVec;
 
     // Pose relative to parent (this is computed when bad flag is activated)
-    cv::Mat mTcp;
+    cv::Mat mTcp;//父位姿　到当前关键帧的转换矩阵
 
     // Scale
     const int mnScaleLevels;
@@ -179,9 +182,10 @@ public:
     const float mfLogScaleFactor;
     const std::vector<float> mvScaleFactors;
     const std::vector<float> mvLevelSigma2;
-    const std::vector<float> mvInvLevelSigma2;
+    const std::vector<float> mvInvLevelSigma2;//g2o 优化时　对于边（误差）的权重
 
     // Image bounds and calibration
+    //图像的四个定点　畸变校正后　得到正确的图像尺寸
     const int mnMinX;
     const int mnMinY;
     const int mnMaxX;
@@ -209,14 +213,14 @@ protected:
     // Grid over the image to speed up feature matching
     std::vector< std::vector <std::vector<size_t> > > mGrid;
 
-    std::map<KeyFrame*,int> mConnectedKeyFrameWeights;
+    std::map<KeyFrame*,int> mConnectedKeyFrameWeights;//帧　和　权重
     std::vector<KeyFrame*> mvpOrderedConnectedKeyFrames;
     std::vector<int> mvOrderedWeights;
 
     // Spanning Tree and Loop Edges
     bool mbFirstConnection;
-    KeyFrame* mpParent;
-    std::set<KeyFrame*> mspChildrens;
+    KeyFrame* mpParent;//父节点
+    std::set<KeyFrame*> mspChildrens;//子节点
     std::set<KeyFrame*> mspLoopEdges;
 
     // Bad flags
@@ -228,6 +232,7 @@ protected:
 
     Map* mpMap;
 
+    //加锁，位姿，连接，特征
     std::mutex mMutexPose;
     std::mutex mMutexConnections;
     std::mutex mMutexFeatures;

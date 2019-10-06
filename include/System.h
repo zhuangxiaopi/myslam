@@ -35,12 +35,13 @@
 #include "KeyFrameDatabase.h"
 #include "ORBVocabulary.h"
 #include "Viewer.h"
+#include <unistd.h>
 
 namespace ORB_SLAM2
 {
 
 class Viewer;
-class FrameDrawer;
+class FrameDrawer;//关键帧绘制
 class Map;
 class Tracking;
 class LocalMapping;
@@ -78,8 +79,10 @@ public:
     cv::Mat TrackMonocular(const cv::Mat &im, const double &timestamp);
 
     // This stops local mapping thread (map building) and performs only camera tracking.
+    //定位　＋　跟踪　模式
     void ActivateLocalizationMode();
     // This resumes local mapping thread and performs SLAM again.
+    //建图　＋　跟踪　模式
     void DeactivateLocalizationMode();
 
     // Returns true if there have been a big map change (loop closure, global BA)
@@ -160,11 +163,11 @@ private:
     std::thread* mptLoopClosing;
     std::thread* mptViewer;
 
-    // Reset flag
+    // Reset flag　线程重启标志
     std::mutex mMutexReset;
     bool mbReset;
 
-    // Change mode flags
+    // Change mode flags　改变定位方式
     std::mutex mMutexMode;
     bool mbActivateLocalizationMode;
     bool mbDeactivateLocalizationMode;

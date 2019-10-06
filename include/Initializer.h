@@ -23,7 +23,15 @@
 #include<opencv2/opencv.hpp>
 #include "Frame.h"
 
-
+/****单目初始化
+ *
+ * 基础矩阵Ｆ 使用随机采样一致性
+ *
+ * 单应矩阵　使用normalized ＤＬＴ
+ *
+ *
+ *
+ * ****/
 namespace ORB_SLAM2
 {
 
